@@ -24,6 +24,10 @@ sudo systemctl restart apache2
 read -p "Do you want to set up a reverse proxy? (y/n): " proxy_answer
 
 if [[ "$proxy_answer" == "y" ]]; then
+    
+read -p "Enter the port number you want to reverse proxy: " port_number
+
+# update virtual host configuration file with reverse proxy settings
     echo "<VirtualHost *:80>
     ServerName $domain_name
     ServerAlias www.$domain_name
@@ -36,9 +40,9 @@ if [[ "$proxy_answer" == "y" ]]; then
         Require all granted
     </Proxy>
 
-    ProxyPass / http://127.0.0.1:3000/
-    ProxyPassReverse / http://127.0.0.1:3000/
-</VirtualHost>" | sudo tee /etc/apache2/sites-available/$domain_name.conf > /dev/null
+    ProxyPass / http://127.0.0.1:$port_number/
+    ProxyPassReverse / http://127.0.0.1:$port_number/
+    </VirtualHost>" | sudo tee -a /etc/apache2/sites-available/$domain_name.conf > /dev/null
 
     sudo a2ensite $domain_name.conf
     sudo apache2ctl configtest

@@ -5,8 +5,7 @@ read -p "Enter the domain name: " domain_name
 sudo mkdir /var/www/$domain_name
 sudo chown -R $USER:$USER /var/www/$domain_name
 sudo chmod -R 755 /var/www/$domain_name
-sudo nano /var/www/$domain_name/index.html
-sudo nano /etc/apache2/sites-available/$domain_name.conf
+echo "site works" | sudo tee /var/www/$domain_name/index.html /dev/null
 
 echo "<VirtualHost *:80>
     ServerAdmin webmaster@localhost

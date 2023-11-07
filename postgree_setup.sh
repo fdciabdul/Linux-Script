@@ -1,48 +1,67 @@
 #!/bin/bash
 
-# Update package list
-sudo apt update
+# Function to install PostgreSQL
+install_postgresql() {
+    echo "Installing PostgreSQL..."
+    sudo apt update
+    sudo apt install -y postgresql postgresql-contrib
+    sudo systemctl start postgresql
+    sudo systemctl enable postgresql
+}
+
+# Function to create a new PostgreSQL database
+create_database() {
+    read -p "Enter the name of the new database: " dbname
+    sudo -u postgres psql -c "CREATE DATABASE $dbname;"
+}
+
+# Function to list all PostgreSQL users for a database
+list_users() {
+    read -p "Enter the name of the database to list users for: " dbname
+    sudo -u postgres psql -d $dbname -c "\du"
+}
+
+# Function to create a new PostgreSQL user
+create_user() {
+    read -p "Enter the name of the new user: " username
+    sudo -u postgres psql -c "CREATE USER $username WITH PASSWORD 'password';"
+}
+
+# Function to grant permission to a user on a database
+grant_permission() {
+    read -p "Enter the name of the database: " dbname
+    read -p "Enter the name of the user: " username
+    sudo -u postgres psql -c "GRANT ALL PRIVILEGES ON DATABASE $dbname TO $username;"
+}
+
+# Starting point of the script
+echo "PostgreSQL Installation & Setup Script"
 
 # Install PostgreSQL
-sudo apt install -y postgresql postgresql-contrib
+install_postgresql
 
-# Start the PostgreSQL service
-sudo systemctl start postgresql
-
-# Enable PostgreSQL to start on boot
-sudo systemctl enable postgresql
-
-# Prompt to create a new database
-read -p "Do you want to create a new database? (y/n): " create_db
-if [[ "$create_db" == "y" ]]; then
-  read -p "Enter database name: " dbname
-  sudo -u postgres createdb "$dbname"
-  echo "Database $dbname created."
+# Ask if the user wants to create a new database
+read -p "Do you want to create a new database? [y/n]: " answer
+if [[ $answer =~ ^[Yy]$ ]]; then
+    create_database
 fi
 
-# List PostgreSQL users
-echo "PostgreSQL users:"
-sudo -u postgres psql -c '\du'
-
-# Check if users exist
-user_count=$(sudo -u postgres psql -tAc "SELECT COUNT(*) FROM pg_roles WHERE rolname NOT IN ('pg_signal_backend', 'postgres')")
-if [[ $user_count -eq 0 ]]; then
-  # No users exist, prompt to create a new one
-  read -p "No users exist. Do you want to create a new one? (y/n): " create_user
-  if [[ "$create_user" == "y" ]]; then
-    read -p "Enter new username: " username
-    read -s -p "Enter password for new user: " password
-    echo
-    sudo -u postgres psql -c "CREATE USER $username WITH PASSWORD '$password';"
-    echo "User $username created."
-  fi
-else
-  # Prompt for permission assignment
-  read -p "Do you want to assign permissions to a user for the database? (y/n): " assign_perm
-  if [[ "$assign_perm" == "y" ]]; then
-    read -p "Enter username: " username
-    read -p "Enter database name: " dbname
-    sudo -u postgres psql -c "GRANT ALL PRIVILEGES ON DATABASE $dbname TO $username;"
-    echo "Permissions assigned to user $username for database $dbname."
-  fi
+# Ask if the user wants to list users of a database
+read -p "Do you want to list users of a specific database? [y/n]: " answer
+if [[ $answer =~ ^[Yy]$ ]]; then
+    list_users
 fi
+
+# Ask if the user wants to create a new PostgreSQL user
+read -p "Do you want to create a new PostgreSQL user? [y/n]: " answer
+if [[ $answer =~ ^[Yy]$ ]]; then
+    create_user
+fi
+
+# Ask if the user wants to grant permissions to a user
+read -p "Do you want to grant permissions to a user on a database? [y/n]: " answer
+if [[ $answer =~ ^[Yy]$ ]]; then
+    grant_permission
+fi
+
+echo "PostgreSQL setup is complete."

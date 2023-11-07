@@ -1,5 +1,16 @@
 #!/bin/bash
 
+###########################################################################
+# Script Name: setup_postgresql.sh
+# Author: fdciabdul
+# Date: 07/11/2024
+# Description: This script automates the installation of PostgreSQL, allows
+#              the creation of a database, lists users, and manages user
+#              permissions within PostgreSQL. It provides interactive prompts
+#              for creating databases, users, and managing access rights.
+###########################################################################
+
+
 # Function to install PostgreSQL
 install_postgresql() {
     echo "Installing PostgreSQL..."
